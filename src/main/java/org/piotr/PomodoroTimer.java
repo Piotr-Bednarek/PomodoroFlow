@@ -10,10 +10,14 @@ import javafx.util.Duration;
 public class PomodoroTimer {
     private Timeline timeline;
 
-    private int[] timerDurationsList = {100,100,1500,300,1500,300,1500,900};
+    private int WORK_TIME_SECONDS = 1500;
+    private int BREAK_TIME_SECONDS = 300;
+    private int LONG_BREAK_TIME_SECONDS = 900;
+
+    private int[] timerDurationsList = {WORK_TIME_SECONDS, BREAK_TIME_SECONDS, WORK_TIME_SECONDS, BREAK_TIME_SECONDS, WORK_TIME_SECONDS, LONG_BREAK_TIME_SECONDS,};
     private int currentTimerIndex = 0;
 
-    private final int timelineCycleDurationInMillis = 50;
+    private final int timelineCycleDurationInMillis = 1;
 
     private int elapsedSeconds = 0;
 
@@ -54,6 +58,9 @@ public class PomodoroTimer {
                 secondsRemaining.setValue(timerDurationsList[currentTimerIndex]);
             }
         }
+    }
+    public int getCurrentTimerDuration() {
+        return timerDurationsList[currentTimerIndex];
     }
 
     private void incrementCurrentTimerIndex() {

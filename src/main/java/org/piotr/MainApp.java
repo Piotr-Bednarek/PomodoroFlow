@@ -1,7 +1,5 @@
 package org.piotr;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -9,47 +7,36 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-
-import java.sql.Time;
 
 public class MainApp extends Application {
     private Button startStopButton;
-    private Scene scene;
 
-    private Label elapsedSecondsLabel =  new Label();
+    private final PomodoroTimer pomodoroTimer = new PomodoroTimer();
 
-    private PomodoroTimer pomodoroTimer =  new PomodoroTimer();
-
-
+    private final Clock clock = new Clock();
     @Override
     public void start(Stage stage) {
-
         pomodoroTimer.initializeTimer();
 
-        pomodoroTimer.secondsRemainingProperty().addListener((observable, oldValue, newValue) -> {
-            updateLabel(newValue.intValue());
-        });
-
-        updateLabel(pomodoroTimer.secondsRemainingProperty().get());
-
         startStopButton = new Button("Start Pomodoro");
-        startStopButton.setOnAction(event -> {toggleStartStop();});
+        startStopButton.setOnAction(event -> toggleStartStop());
 
-        VBox root = new VBox(10,elapsedSecondsLabel, startStopButton);
+        pomodoroTimer.secondsRemainingProperty().addListener((obs, oldVal, newVal) -> updateUI(newVal.intValue()));
+
+        updateUI(pomodoroTimer.secondsRemainingProperty().get());
+
+        VBox root = new VBox(20, clock.clockContainer, startStopButton);
         root.setAlignment(Pos.CENTER);
+        root.setStyle("-fx-padding: 30;");
 
-        scene = new Scene(root, 400, 400);
-
+        Scene scene = new Scene(root, 400, 500);
         stage.setTitle("Pomodoro Flow");
         stage.setScene(scene);
         stage.show();
     }
 
-    private void updateLabel(int remainingSeconds) {
-        int minutes = remainingSeconds / 60;
-        int seconds = remainingSeconds % 60;
-        elapsedSecondsLabel.setText(String.format("%02d:%02d", minutes, seconds));
+    private void updateUI(int remainingSeconds) {
+        clock.updateClock(remainingSeconds, pomodoroTimer.getCurrentTimerDuration());
     }
 
     private void toggleStartStop() {
