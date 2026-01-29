@@ -15,29 +15,26 @@ import java.sql.Time;
 
 public class MainApp extends Application {
     private Button startStopButton;
-    private Boolean isRunning = false;
     private Scene scene;
 
-    private int timelineCycleDurationInMillis = 50;
-    private Timeline timeline;
+    private Label elapsedSecondsLabel =  new Label();
 
-    private int elapsedSeconds = 0;
-
-    private int[] timerDurationsList = {100,100,1500,300,1500,300,1500,900};
-    private int currentTimerIndex = 0;
-
-    private Label elapsedSecondsLabel;
+    private PomodoroTimer pomodoroTimer =  new PomodoroTimer();
 
 
     @Override
     public void start(Stage stage) {
-        timeline = new Timeline(new KeyFrame(Duration.millis(timelineCycleDurationInMillis), event -> updateElapsedSeconds()));
-        timeline.setCycleCount(Timeline.INDEFINITE);
+
+        pomodoroTimer.initializeTimer();
+
+        pomodoroTimer.secondsRemainingProperty().addListener((observable, oldValue, newValue) -> {
+            updateLabel(newValue.intValue());
+        });
+
+        updateLabel(pomodoroTimer.secondsRemainingProperty().get());
 
         startStopButton = new Button("Start Pomodoro");
         startStopButton.setOnAction(event -> {toggleStartStop();});
-
-        elapsedSecondsLabel = new Label(String.valueOf(elapsedSeconds));
 
         VBox root = new VBox(10,elapsedSecondsLabel, startStopButton);
         root.setAlignment(Pos.CENTER);
@@ -49,46 +46,20 @@ public class MainApp extends Application {
         stage.show();
     }
 
+    private void updateLabel(int remainingSeconds) {
+        int minutes = remainingSeconds / 60;
+        int seconds = remainingSeconds % 60;
+        elapsedSecondsLabel.setText(String.format("%02d:%02d", minutes, seconds));
+    }
+
     private void toggleStartStop() {
-        if (!isRunning) {
-            isRunning = true;
+        if (!pomodoroTimer.isRunning()) {
+            pomodoroTimer.startTimer();
             startStopButton.setText("Stop Pomodoro");
-            startTimer();
-        } else if (isRunning) {
-            isRunning = false;
+        } else {
+            pomodoroTimer.stopTimer();
             startStopButton.setText("Start Pomodoro");
-            stopTimer();
         }
-    }
-
-    private void startTimer() {
-        timeline.play();
-    }
-
-    private void stopTimer() {
-        timeline.stop();
-    }
-
-    private void updateElapsedSeconds() {
-        if (isRunning) {
-            elapsedSeconds++;
-
-            int currentTimerSeconds = timerDurationsList[currentTimerIndex];
-            int remainingSeconds = currentTimerSeconds - elapsedSeconds;
-
-            if (remainingSeconds <= 0) {
-                incrementCurrentTimerIndex();
-                elapsedSeconds = 0;
-            } else {
-                int minutes = remainingSeconds / 60;
-                int seconds = remainingSeconds % 60;
-                elapsedSecondsLabel.setText(String.format("%02d:%02d", minutes, seconds));
-            }
-        }
-    }
-
-    private void incrementCurrentTimerIndex() {
-        currentTimerIndex++;
     }
 
     public static void main(String[] args) {
